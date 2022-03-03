@@ -64,16 +64,6 @@ abstract class Mathf {
         return hit;
     }
     
-    public static boolean intersectArrayLookFor(double x1, double y1, double x2, double y2, int[][] array, int lookFor){
-        double angle = Math.atan2(y2 - y1, x2 - x1);
-        double dist = dist(x1, y1, x2, y2);
-        
-        Raycast ray = new Raycast();
-        ray.castRayLookFor(x1, y1, angle, array, 1, lookFor);
-        
-        return ray.rayDist < dist;
-    }
-    
     public static int getBlockType(double[] point, int[][] level, int cellSize){
         int xPoint = (int)(point[0]/cellSize);
         int yPoint = (int)(point[1]/cellSize);
