@@ -2,7 +2,7 @@ package shooter3d;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-//base enemy class, plan to add more enemys
+//base enemy class
 public class Enemy extends Object{
     int health = 100;
     
@@ -10,6 +10,9 @@ public class Enemy extends Object{
     public double acc = 0.5, dcc = 0.25;
     
     public int size = 50;
+    
+    //how far enemy can see
+    public double range = 1300;
     
     public Enemy(Screen s, int x, int y, BufferedImage sprite){
         super(s, x, y, sprite);
@@ -89,7 +92,7 @@ public class Enemy extends Object{
     }
     public boolean canSee(){
         //enemy is in view
-        if(Mathf.dist(x, y, s.p.x, s.p.y) > s.p.rw.renderDist) return false;
+        if(Mathf.dist(x, y, s.p.x, s.p.y) > range) return false;
         
         //intersection between player and enemy
         return !Mathf.intersectArray(x+(size/2), y+(size/2), s.p.x+(s.p.size/2), s.p.y+(s.p.size/2), s.lm.blocks, s.lm.cellSize, s.lm.cellSize/2);

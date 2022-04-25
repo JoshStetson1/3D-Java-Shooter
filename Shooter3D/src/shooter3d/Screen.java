@@ -175,6 +175,7 @@ public final class Screen extends JPanel implements ActionListener, KeyListener,
         lm.makeLevel(100, 100);
         
         p.isDead = false;
+        p.hasWon = false;
         p.health = 100;
         
         hideCursor(true);

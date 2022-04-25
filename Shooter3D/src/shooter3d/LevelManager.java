@@ -94,6 +94,9 @@ public class LevelManager {
                     }
                 }
                 
+                Light light = new Light(s, (posX + width/2) * cellSize, (posY + height/2) * cellSize, new Color(150, 100, 0), 0.7, 2000);
+                s.l.lights.add(light);
+                
                 break;
             }
         }
@@ -144,8 +147,8 @@ public class LevelManager {
         }
         
         //---------------add enemies---------------
-        int enemyCount = rand.nextInt(10)+20;
-        for(int i = 0; i < enemyCount; i++){
+        int zombieCount = rand.nextInt(10)+5;
+        for(int i = 0; i < zombieCount; i++){
             int posX = 0, posY = 0;
             while(true){//search for position without block
                 posX = rand.nextInt(w-2)+1;
@@ -153,13 +156,27 @@ public class LevelManager {
                 if(Mathf.dist(s.p.x, s.p.y, posX*50, posY*50) < 250);
                 else if(blocks[posY][posY] == 0) break;
             }
-            s.l.objects.add(new Zombie(s, posX*cellSize + cellSize/2, posY*cellSize + cellSize/2));
+            //s.l.objects.add(new Zombie(s, posX*cellSize + cellSize/2, posY*cellSize + cellSize/2));
+        }
+        int demonCount = rand.nextInt(10)+5;
+        for(int i = 0; i < demonCount; i++){
+            int posX = 0, posY = 0;
+            while(true){//search for position without block
+                posX = rand.nextInt(w-2)+1;
+                posY = rand.nextInt(h-2)+1;
+                if(Mathf.dist(s.p.x, s.p.y, posX*50, posY*50) < 250);
+                else if(blocks[posY][posY] == 0) break;
+            }
+            //s.l.objects.add(new Demon(s, posX*cellSize + cellSize/2, posY*cellSize + cellSize/2));
         }
         
         //---------------spawn player---------------
         int[] playerPos = findSpawnPos(rand, w, h);
         s.p.x = playerPos[0]*cellSize + cellSize/2;
         s.p.y = playerPos[1]*cellSize + cellSize/2;
+        
+        s.p.x = 200;
+        s.p.y = 200;
     }
     
     public int[] findSpawnPos(Random rand, int w, int h){

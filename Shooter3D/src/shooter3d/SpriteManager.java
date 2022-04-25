@@ -43,8 +43,10 @@ abstract class SpriteManager {
     static int dirt = 5;
     
     //objects
-    static BufferedImage zombie = loadImage("paint\\lostSoul.png");
+    static BufferedImage zombie = loadImage("paint\\lostSoul2.png");
+    static BufferedImage demon = loadImage("paint\\lostSoul.png");
     static BufferedImage bullet = loadImage("paint\\bullet.png");
+    static BufferedImage bullet2 = loadImage("paint\\bullet2.png");
     static BufferedImage tree = loadImage("paint\\tree.png");
     static BufferedImage barrel = loadImage("paint\\barrel.png");
     

@@ -30,6 +30,7 @@ public class Player {
     
     //health and death
     boolean isDead;
+    boolean hasWon;
     int health = 100;
     Button restart, menu;
     
@@ -46,11 +47,11 @@ public class Player {
         menu = new Button(s, words[11], 300 - 126, 385, 126*2, 18*2, Button.shade);
         
         //default gun
-        gun = new Gun(s, Gun.shotGun, false, 5, 100, 10, 0.1, 5, 25);
+        gun = new Gun(s, Gun.shotGun, "player", false, 5, 100, 10, 0.1, 5, 25, SpriteManager.bullet);
     }
     public void tick(){
         //if dead can't move
-        if(isDead) return;
+        if(isDead || hasWon) return;
         
         rotateHead();
         movement();
@@ -59,11 +60,24 @@ public class Player {
         x += velX * s.deltaTime;
         y += velY * s.deltaTime;
         
-        if(shooting) gun.shoot(ang);
+        if(shooting) gun.shoot(ang, x, y);
+        
+        //if(s.l.enemys.isEmpty()) hasWon = true;
     }
     public void paint(Graphics g){
         Graphics2D g2 = (Graphics2D)g;
         
+        g.fillRect((int)x, (int)y, 50, 50);
+        /*
+        g.setColor(Color.red);
+        g.drawLine((int)x + 25, (int)y + 25, (int)(x + (dx*50)) + 25, (int)(y + (dy*50)) + 25);
+        
+        double velAng = Math.atan2(velY, velX);
+        double dxx = Math.cos(velAng);
+        double dyy = Math.sin(velAng);
+        g.setColor(Color.blue);
+        g.drawLine((int)x + 25, (int)y + 25, (int)(x + (dxx*50)) + 25, (int)(y + (dyy*50)) + 25);
+        */
         //drawing 3d world
         rw.drawWorld(g);
         
@@ -89,6 +103,21 @@ public class Player {
             
             //is dead text
             g.drawImage(words[9], 48, 100, 126*4, 18*4, s);
+            
+            //paint buttons
+            restart.paint(g);
+            menu.paint(g);
+        }
+        
+        if(hasWon){
+            //background
+            g.setColor(new Color(0, 0, 0, 200));
+            g.fillRect(0, 0, 600, 600);
+            
+            s.hideCursor(false);
+            
+            //is dead text
+            //g.drawImage(words[9], 48, 100, 126*4, 18*4, s);
             
             //paint buttons
             restart.paint(g);
@@ -122,6 +151,20 @@ public class Player {
         }
     }
     public void movement(){
+        //velocity of player, hypo of x and y velocitys
+        double velocity = Mathf.dist(0, 0, velX, velY);
+        
+        double velAng = Math.atan2(velY, velX);
+        
+        double velDiffY = Mathf.diff(ang, velAng);
+        
+        //System.out.println(velDiffY + " " + ang + " " + velAng);
+        
+        double magY = Math.cos(velDiffY) * velocity;
+        double magX = Math.sin(velDiffY) * velocity;
+        
+        //System.out.println(magY + " " + magX);
+        
         //movement
         if(moving[2]){//move forwards
             velX += dx * acc * s.deltaTime;
@@ -140,18 +183,19 @@ public class Player {
             velY -= Math.sin(ang-(Math.PI/2)) * acc * s.deltaTime;
         }
         
-        //velocity of player, hypo of x and y velocitys
-        double velocity = Mathf.dist(0, 0, velX, velY);
-        
         //max out speed/ multiply normalized velocity by maxSpeed as to maintain current direction
+        ///*
         if(Mathf.dist(0, 0, velX, velY) > maxMoveSpeed){
-            //double velocity = Mathf.dist(0, 0, velX, velY);
             double normalX = velX/velocity;
             double normalY = velY/velocity;
             
-            velX = normalX * maxMoveSpeed;
-            velY = normalY * maxMoveSpeed;
+            System.out.println(Math.cos(velAng) + " " + Math.sin(velAng));
+            System.out.println(normalX + " " + normalY);
+            
+            velX = Math.cos(velAng) * (maxMoveSpeed-1);
+            velY = Math.sin(velAng) * (maxMoveSpeed-1);
         }
+        //*/
         
         //drag
         if(!moving[0] && !moving[1] && !moving[2] && !moving[3])//no buttons are being pressed
@@ -159,7 +203,6 @@ public class Player {
             //speed fits a stop threshold so no jitter when velocity approaches zero
             if(Mathf.dist(0, 0, velX, velY) > stopThreshold){
                 //multiply normalized velocity by decceleration force
-                //double velocity = Mathf.dist(0, 0, velX, velY);
                 double xDrag = -velX/velocity * dcc;
                 double yDrag = -velY/velocity * dcc;
                 
@@ -237,7 +280,7 @@ public class Player {
     
     //shooting and buttons for death screen
     public void mouseClicked(int mx, int my){
-        if(isDead){
+        if(isDead || hasWon){
             if(restart.checkHit(mx, my)) s.startGame();
             if(menu.checkHit(mx, my)) s.mainMenu();
         }
@@ -248,7 +291,26 @@ public class Player {
             }
         
             if(gun.isAuto) shooting = true;
-            else gun.shoot(ang);
+            else gun.shoot(ang, x, y);
         }
     }
 }
+/*
+//movement
+        if(moving[2]){//move forwards
+            velX += dx * acc * s.deltaTime;
+            velY += dy * acc * s.deltaTime;
+        }
+        if(moving[3]){//move backwards
+            velX -= dx * acc * s.deltaTime;
+            velY -= dy * acc * s.deltaTime;
+        }
+        if(moving[0]){//move left
+            velX -= Math.cos(ang+(Math.PI/2)) * acc * s.deltaTime;
+            velY += Math.sin(ang-(Math.PI/2)) * acc * s.deltaTime;
+        }
+        if(moving[1]){//move right
+            velX += Math.cos(ang+(Math.PI/2)) * acc * s.deltaTime;
+            velY -= Math.sin(ang-(Math.PI/2)) * acc * s.deltaTime;
+        }
+*/

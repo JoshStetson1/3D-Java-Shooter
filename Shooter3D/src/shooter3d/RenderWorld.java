@@ -62,9 +62,24 @@ public class RenderWorld {
                 else sampleX = (int)ray.rayY - ((int)(ray.rayY/cellSize) * cellSize);
                 
                 //darkening image to give fog effect
-                float darken = (float)(1 - Mathf.Clamp(ray.rayDist/renderDist, 0, 1 ));
+                float darken = (float)(1 - Mathf.Clamp(ray.rayDist/renderDist, 0, 1));
+                //float darken = 0.2f;
+                
+                Color tempColor = fog;
+                /*
+                for(int i = 0; i < s.l.lights.size(); i++){
+                    Light tempLight = s.l.lights.get(i);
+                    
+                    if(!Mathf.intersectArray(tempLight.x, tempLight.y, ray.rayX, ray.rayY, s.lm.blocks, s.lm.cellSize, s.lm.cellSize/2)){
+                        double distToLight = Mathf.dist(ray.rayX, ray.rayY, tempLight.x, tempLight.y);
+                        float intensity = (float)(1 - Mathf.Clamp(distToLight/tempLight.reach, 0, 1));
+                        darken = (darken + intensity) / 2;
+                        tempColor = changeColor(tempLight.color, tempColor, intensity * tempLight.intensity);
+                    }
+                }
+                */
                 float[] light = {darken, darken, darken};
-                float[] color = {fog.getRed() * (1 - darken), fog.getGreen() * (1 - darken), fog.getBlue() * (1 - darken)};
+                float[] color = {tempColor.getRed() * (1 - darken), tempColor.getGreen() * (1 - darken), tempColor.getBlue() * (1 - darken)};
                 RescaleOp op = new RescaleOp(light, color, null);
                 
                 //draw wall texture using info on the wallTypes array
@@ -83,6 +98,7 @@ public class RenderWorld {
         //-----draw objects-----
         drawObjects(g2, wallDists);
     }
+    
     public void drawObjects(Graphics2D g2, double[] wallDists){
         HashMap<Double, Object> objToRender = new HashMap<>();
         ArrayList<Double> distList = new ArrayList<>();

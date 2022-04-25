@@ -1,4 +1,5 @@
 package shooter3d;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.*;
 
@@ -17,10 +18,17 @@ public class Gun {
     Random rand = new Random();
     long nowTime, time;
     
-    public Gun(Screen s, File shotSound, boolean isAuto, int amount, int speed, double spread, double fireRate, double recoil, int damage){
+    //whos holding the gun
+    String holder;
+    
+    BufferedImage bulletImg;
+    
+    public Gun(Screen s, File shotSound, String holder, boolean isAuto, int amount, int speed, double spread, double fireRate, double recoil, int damage, BufferedImage bulletImg){
         this.s = s;
         
         this.shotSound = shotSound;
+        
+        this.holder = holder;
         
         this.isAuto = isAuto;
         this.amount = amount;
@@ -30,13 +38,15 @@ public class Gun {
         this.recoil = recoil;
         this.damage = damage;
         
+        this.bulletImg = bulletImg;
+        
         nowTime = System.nanoTime();
     }
-    public void shoot(double angle){
+    public void shoot(double angle, double x, double y){
         if(!canShoot()) return;
         
         for(int i = 0; i < amount; i++){
-            Bullet tempBullet = new Bullet(s, SpriteManager.bullet, s.p.x, s.p.y);
+            Bullet tempBullet = new Bullet(s, bulletImg, holder, x, y);
             
             //add to new bullet force with given spread/ accurecy
             double spreadX = (rand.nextDouble()-0.5) * spread;
@@ -48,8 +58,10 @@ public class Gun {
             s.l.objects.add(tempBullet);
         }
         //recoil
-        s.p.velX -= Math.cos(angle) * recoil;
-        s.p.velY -= Math.sin(angle) * recoil;
+        if(holder.equals("player")){
+            s.p.velX -= Math.cos(angle) * recoil;
+            s.p.velY -= Math.sin(angle) * recoil;
+        }
         
         s.PlaySound(shotSound);
         

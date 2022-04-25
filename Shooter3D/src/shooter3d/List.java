@@ -1,5 +1,4 @@
 package shooter3d;
-import java.awt.*;
 import java.util.*;
 
 //Lists that keep track of gameobjects
@@ -10,6 +9,8 @@ public class List {
     public ArrayList<Enemy> enemys = new ArrayList<>();
     
     public ArrayList<Object> objects = new ArrayList<>();
+    
+    public ArrayList<Light> lights = new ArrayList<>();
     
     public List(Screen s){
         this.s = s;

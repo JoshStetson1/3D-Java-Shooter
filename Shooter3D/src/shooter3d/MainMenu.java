@@ -93,15 +93,15 @@ public class MainMenu {
             
             //weapons
             if(shot.checkHit(x, y)){
-                s.p.gun = new Gun(s, Gun.shotGun, false, 5, 75, 10, 0.2, 5, 20);//shotgun
+                s.p.gun = new Gun(s, Gun.shotGun, "player", false, 5, 75, 10, 0.2, 5, 20, SpriteManager.bullet);//shotgun
                 selected = shot.bounds();
             }
             if(auto.checkHit(x, y)){
-                s.p.gun = new Gun(s, Gun.gunShot, true, 1, 75, 2, 0.05, 1, 20);//auto
+                s.p.gun = new Gun(s, Gun.gunShot, "player", true, 1, 75, 2, 0.05, 1, 20, SpriteManager.bullet);//auto
                 selected = auto.bounds();
             }
             if(sniper.checkHit(x, y)){
-                s.p.gun = new Gun(s, Gun.gunShot, false, 1, 75, 0, 0.1, 2, 35);//pistol
+                s.p.gun = new Gun(s, Gun.gunShot, "player", false, 1, 75, 0, 0.1, 2, 35, SpriteManager.bullet);//pistol
                 selected = sniper.bounds();
             }
             
