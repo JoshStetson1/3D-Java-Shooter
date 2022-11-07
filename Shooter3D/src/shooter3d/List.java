@@ -10,8 +10,6 @@ public class List {
     
     public ArrayList<Object> objects = new ArrayList<>();
     
-    public ArrayList<Light> lights = new ArrayList<>();
-    
     public List(Screen s){
         this.s = s;
     }

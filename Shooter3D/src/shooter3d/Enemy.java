@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 //base enemy class
 public class Enemy extends Object{
     int health = 100;
+    public boolean attack;
     
     public double velX, velY, maxMoveSpeed;
     public double acc = 0.5, dcc = 0.25;
@@ -12,7 +13,7 @@ public class Enemy extends Object{
     public int size = 50;
     
     //how far enemy can see
-    public double range = 1300;
+    public double range;
     
     public Enemy(Screen s, int x, int y, BufferedImage sprite){
         super(s, x, y, sprite);
@@ -20,9 +21,14 @@ public class Enemy extends Object{
         this.y = y;
         
         s.l.enemys.add(this);
+        
+        range = s.p.rw.renderDist;
     }
     
     public void Move(double xDir,double yDir){//1, -1, or 0 values
+        //game is done
+        if(s.p.isDead || s.p.hasWon) return;
+        
         //add given force
         velX += acc * xDir;
         velY += acc * yDir;
@@ -91,6 +97,9 @@ public class Enemy extends Object{
         return s.lm.blocks[yPoint][xPoint];
     }
     public boolean canSee(){
+        //game is done
+        if(s.p.isDead || s.p.hasWon) return false;
+        
         //enemy is in view
         if(Mathf.dist(x, y, s.p.x, s.p.y) > range) return false;
         

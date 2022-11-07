@@ -55,8 +55,8 @@ public class Bullet extends Object{
                     double normalX = velX/hypo;
                     double normalY = velY/hypo;
 
-                    enemy.velX = normalX * (damage/15);
-                    enemy.velY = normalY * (damage/15);
+                    enemy.velX = normalX * (damage/50);
+                    enemy.velY = normalY * (damage/50);
 
                     enemy.takeDamage(damage);
                     return;
@@ -76,7 +76,6 @@ public class Bullet extends Object{
                 s.p.velY = normalY * (damage/15);
 
                 s.p.takeDamage(damage);
-                return;
             }
         }
     }

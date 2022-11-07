@@ -101,7 +101,7 @@ public class MainMenu {
                 selected = auto.bounds();
             }
             if(sniper.checkHit(x, y)){
-                s.p.gun = new Gun(s, Gun.gunShot, "player", false, 1, 75, 0, 0.1, 2, 35, SpriteManager.bullet);//pistol
+                s.p.gun = new Gun(s, Gun.sniper, "player", false, 1, 100, 0, 0.3, 5, 100, SpriteManager.bullet);//pistol
                 selected = sniper.bounds();
             }
             

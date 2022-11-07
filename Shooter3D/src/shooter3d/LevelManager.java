@@ -21,6 +21,7 @@ public class LevelManager {
         this.s = s;
     }
     
+    //this function is messy due to the amount of things that go into a level
     public void makeLevel(int w, int h){
         //declare all map arrays
         blocks = new int[h][w];
@@ -62,6 +63,7 @@ public class LevelManager {
                 int height = rand.nextInt(5)+5;
 
                 if(posX + width < w && posY + height < h){
+                    //doors for shelter/ random blocks not to add to walls
                     int spaceX = rand.nextInt(width-1)+posX;
                     int spaceY = rand.nextInt(height-1)+posY;
 
@@ -93,9 +95,6 @@ public class LevelManager {
                         }
                     }
                 }
-                
-                Light light = new Light(s, (posX + width/2) * cellSize, (posY + height/2) * cellSize, new Color(150, 100, 0), 0.7, 2000);
-                s.l.lights.add(light);
                 
                 break;
             }
@@ -147,7 +146,7 @@ public class LevelManager {
         }
         
         //---------------add enemies---------------
-        int zombieCount = rand.nextInt(10)+5;
+        int zombieCount = rand.nextInt(20)+10;
         for(int i = 0; i < zombieCount; i++){
             int posX = 0, posY = 0;
             while(true){//search for position without block
@@ -156,9 +155,9 @@ public class LevelManager {
                 if(Mathf.dist(s.p.x, s.p.y, posX*50, posY*50) < 250);
                 else if(blocks[posY][posY] == 0) break;
             }
-            //s.l.objects.add(new Zombie(s, posX*cellSize + cellSize/2, posY*cellSize + cellSize/2));
+            s.l.objects.add(new Zombie(s, posX*cellSize + cellSize/2, posY*cellSize + cellSize/2));
         }
-        int demonCount = rand.nextInt(10)+5;
+        int demonCount = rand.nextInt(20)+10;
         for(int i = 0; i < demonCount; i++){
             int posX = 0, posY = 0;
             while(true){//search for position without block
@@ -167,7 +166,7 @@ public class LevelManager {
                 if(Mathf.dist(s.p.x, s.p.y, posX*50, posY*50) < 250);
                 else if(blocks[posY][posY] == 0) break;
             }
-            //s.l.objects.add(new Demon(s, posX*cellSize + cellSize/2, posY*cellSize + cellSize/2));
+            s.l.objects.add(new Demon(s, posX*cellSize + cellSize/2, posY*cellSize + cellSize/2));
         }
         
         //---------------spawn player---------------
@@ -275,12 +274,8 @@ public class LevelManager {
             double ex = enemy.x;
             double ey = enemy.y;
             
-            /*
-            if(Mathf.dist(s.p.x, s.p.y, ex, ey)/cellSize > dist/2){
-                ex = s.p.x + Mathf.normalize(enemy.x - s.p.x, enemy.y - s.p.y)[0] * ((dist/2) * cellSize);
-                ey = s.p.y + Mathf.normalize(enemy.x - s.p.x, enemy.y - s.p.y)[1] * ((dist/2) * cellSize);
-            }
-            */
+            if(!enemy.attack) continue;
+            
             if(Mathf.dist(s.p.x, s.p.y, ex, ey)/cellSize < dist/2){
                 double imageScale = (double)size / ((double)dist*cellSize);
 

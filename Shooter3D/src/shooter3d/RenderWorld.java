@@ -8,15 +8,79 @@ public class RenderWorld {
     Screen s;
     Player p;
     
-    int res = 2;//resolution
-    int gRes = 2;//ground resolution
-    int renderDist = 1500;//1500
+    int res = 2;//resolution, how many pixels each wall cell takes up
+    int gRes = 2;//ground resolution, how many pixels each ground block takes up, is multiplied by res
+    int renderDist = 2000;//how far until fog, acts as a light for the player
     
-    Color fog = new Color(0, 0, 0);//0, 0, 12
+    //field of view
+    double fov = Math.toRadians(60);
+    
+    Color fog = new Color(30, 0, 0);
+    
+    Button restart, menu;
+    boolean lockMouse;
     
     public RenderWorld(Screen s, Player p){
         this.s = s;
         this.p = p;
+        
+        //buttons for death screen
+        restart = new Button(s, words[10], 300 - 126, 325, 126*2, 18*2, Button.shade);
+        menu = new Button(s, words[11], 300 - 126, 385, 126*2, 18*2, Button.shade);
+    }
+    
+    public void paint(Graphics g){
+        Graphics2D g2 = (Graphics2D)g;
+        
+        //drawing 3d world
+        drawWorld(g);
+        
+        UI(g);
+    }
+    
+    public void UI(Graphics g){
+        //crosshair
+        g.setColor(Color.white);
+        g.fillRect(getWidth()/2 - 2, getHeight()/2 - 2, 4, 4);
+        
+        //health bar
+        g.setColor(new Color(200, 0, 0));
+        g.fillRect(460, 150, 130, 10);
+        g.setColor(new Color(0, 200, 0));
+        g.fillRect(460, 150, (int)(p.health*1.3), 10);
+        g.setColor(Color.lightGray);
+        g.drawRect(460, 150, 130, 10);
+        
+        //death screen
+        if(p.isDead){
+            //background
+            g.setColor(new Color(0, 0, 0, 200));
+            g.fillRect(0, 0, 600, 600);
+            
+            s.hideCursor(false);
+            
+            //is dead text
+            g.drawImage(words[9], 48, 100, 126*4, 18*4, s);
+            
+            //paint buttons
+            restart.paint(g);
+            menu.paint(g);
+        }
+        
+        if(p.hasWon){
+            //background
+            g.setColor(new Color(0, 0, 0, 200));
+            g.fillRect(0, 0, 600, 600);
+            
+            s.hideCursor(false);
+            
+            //is dead text
+            g.drawImage(words[9], 48, 100, 126*4, 18*4, s);
+            
+            //paint buttons
+            restart.paint(g);
+            menu.paint(g);
+        }
     }
     
     public void drawWorld(Graphics g){
@@ -30,10 +94,10 @@ public class RenderWorld {
         int[][] wallTypes = s.lm.walls;
         int cellSize = s.lm.cellSize;
         
-        double ra = Mathf.limitFor(p.ang-Mathf.dr*30);//starting angle
+        double ra = Mathf.limitFor(p.ang-(fov/2));//starting angle
         double[] wallDists = new double[600/res];//wall distances, used when drawing objects to find what objects can be seen
         
-        for(int r = 0; r < 600/res; r++){//making rays
+        for(int r = 0; r < getWidth()/res; r++){//making rays
             Raycast ray = new Raycast();
             ray.castRay(p.x, p.y, ra, wallTypes, cellSize);
             
@@ -63,23 +127,8 @@ public class RenderWorld {
                 
                 //darkening image to give fog effect
                 float darken = (float)(1 - Mathf.Clamp(ray.rayDist/renderDist, 0, 1));
-                //float darken = 0.2f;
-                
-                Color tempColor = fog;
-                /*
-                for(int i = 0; i < s.l.lights.size(); i++){
-                    Light tempLight = s.l.lights.get(i);
-                    
-                    if(!Mathf.intersectArray(tempLight.x, tempLight.y, ray.rayX, ray.rayY, s.lm.blocks, s.lm.cellSize, s.lm.cellSize/2)){
-                        double distToLight = Mathf.dist(ray.rayX, ray.rayY, tempLight.x, tempLight.y);
-                        float intensity = (float)(1 - Mathf.Clamp(distToLight/tempLight.reach, 0, 1));
-                        darken = (darken + intensity) / 2;
-                        tempColor = changeColor(tempLight.color, tempColor, intensity * tempLight.intensity);
-                    }
-                }
-                */
                 float[] light = {darken, darken, darken};
-                float[] color = {tempColor.getRed() * (1 - darken), tempColor.getGreen() * (1 - darken), tempColor.getBlue() * (1 - darken)};
+                float[] color = {fog.getRed() * (1 - darken), fog.getGreen() * (1 - darken), fog.getBlue() * (1 - darken)};
                 RescaleOp op = new RescaleOp(light, color, null);
                 
                 //draw wall texture using info on the wallTypes array
@@ -93,7 +142,8 @@ public class RenderWorld {
             
             //add wall distance
             wallDists[r] = ray.rayDist/Math.cos(ca);
-            ra = Mathf.limitFor(ra + (res * Mathf.dr/10));//add another degree
+            ra = Mathf.limitFor(ra + fov*((double)res/getWidth()));//add another degree
+            
         }
         //-----draw objects-----
         drawObjects(g2, wallDists);
@@ -103,6 +153,8 @@ public class RenderWorld {
         HashMap<Double, Object> objToRender = new HashMap<>();
         ArrayList<Double> distList = new ArrayList<>();
         
+        double cellSize = s.lm.cellSize;
+        
         //add all objects visible to the player
         for(int i = 0; i < s.l.objects.size(); i++){
             Object obj = s.l.objects.get(i);
@@ -110,7 +162,8 @@ public class RenderWorld {
             double distToPlayer = Mathf.dist(p.x, p.y, obj.x, obj.y);
             
             //is in players feild of veiw and is not too far away
-            if(Math.abs(Mathf.diff(p.ang, angToPlayer)) < Mathf.dr*50 && distToPlayer < renderDist && distToPlayer > s.lm.cellSize/2){
+            double cutOff = fov/2;
+            if(Math.abs(Mathf.diff(p.ang, angToPlayer)) < cutOff + Math.toRadians(20) && distToPlayer < renderDist && distToPlayer > cellSize/2){
                 objToRender.put(distToPlayer, obj);
                 distList.add(distToPlayer);
             }
@@ -134,21 +187,25 @@ public class RenderWorld {
             //the angle of the players angle to the objects angle
             double ang = Mathf.limitFor(-(p.ang-angToPlayer));
             
+            //space fov takes up based on distance from player
+            double screenSpace = fov * distToPlayer;
+            
             //size of object relative to player using its distance
             double yDis = Math.cos(ang)*distToPlayer;
-            double objSizeY = (s.lm.cellSize*getWidth())/yDis;
-            double sizeScale = (sWidth/sHeight) * s.lm.cellSize;
-            double objSizeX = (sizeScale*getWidth())/yDis;
-            double objY = getHeight()/2 - objSizeY/2;
+            double objSizeY = (cellSize*getWidth())/yDis;
+            double objSizeX = (sWidth/sHeight) * cellSize;
+            //obj width ajusted for feild of veiw
+            objSizeX = (objSizeX/(distToPlayer*fov))*getWidth();
             
-            //x difference to object relative to player
+            //object positions
+            double objY = getHeight()/2 - objSizeY/2;
+            //distance between center of players veiw and object
             double xDis = Math.abs(Mathf.diff(p.ang, angToPlayer)) * distToPlayer;
             if(Math.sin(ang)*distToPlayer < 0) xDis *= -1;
             
-            //convert into screen space to render
-            double screenSpace = (60*Mathf.dr) * distToPlayer;
-            double scale = getWidth()/screenSpace;
-            double objX = getWidth()/2 + (getWidth() - (screenSpace-xDis) * scale) - (objSizeX/2);
+            //convert into screen space to find obj x position
+            double screenScale = getWidth()/screenSpace;
+            double objX = getWidth()/2 + (getWidth() - (screenSpace-xDis) * screenScale) - (objSizeX/2);
 
             //darkness of object, used for fog
             double darken = 1 - Mathf.Clamp(distToPlayer/renderDist, 0, 1);
@@ -180,12 +237,13 @@ public class RenderWorld {
             
             //sometimes the ground coordinates will go outside the level array, its easier just to put it in a try statement
             try{
+                //projection point based on player position and how far down rendering is from the middle of the screen
                 double tx = s.p.x/2 + Math.cos(ra)*(145)*100/mid/raFix;
                 double ty = s.p.y/2 + Math.sin(ra)*(145)*100/mid/raFix;
-                double dark = 1 - Mathf.dist(s.p.x, s.p.y, tx*2, ty*2)/renderDist;
+                double distance = 1 - Mathf.dist(s.p.x, s.p.y, tx*2, ty*2)/renderDist;
                 
                 //if outside of render distance don't draw
-                if(dark <= 0) continue;
+                if(distance <= 0) continue;
                 
                 //----------Ground----------
                 double gx = tx;
@@ -208,7 +266,7 @@ public class RenderWorld {
                 gy = Math.abs(gy);
 
                 //draw pixel
-                g.setColor(changeColor(new Color(gTexture.getRGB((int)gx, (int)gy)), fog, dark));
+                g.setColor(changeColor(new Color(gTexture.getRGB((int)gx, (int)gy)), fog, distance));
                 g.fillRect(r*res+1, yy, res*gRes, gRes);
                 
                 //----------Ceiling----------
@@ -233,10 +291,18 @@ public class RenderWorld {
                     cy = Math.abs(cy);
 
                     //draw pixel
-                    g.setColor(changeColor(new Color(cTexture.getRGB((int)cx, (int)cy)), fog, dark));
+                    g.setColor(changeColor(new Color(cTexture.getRGB((int)cx, (int)cy)), fog, distance));
                     g.fillRect(r*res+1, getHeight() - yy, res*gRes, gRes);
                 }
             } catch(Exception e){ }
+        }
+    }
+    
+    //buttons for death screen
+    public void mouseClicked(int mx, int my){
+        if(p.isDead || p.hasWon){
+            if(restart.checkHit(mx, my)) s.startGame();
+            if(menu.checkHit(mx, my)) s.mainMenu();
         }
     }
     

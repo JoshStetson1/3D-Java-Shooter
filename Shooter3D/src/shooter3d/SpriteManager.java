@@ -1,6 +1,7 @@
 package shooter3d;
 import java.awt.Color;
 import java.awt.image.*;
+import java.util.*;
 import java.io.*;
 import javax.imageio.ImageIO;
 
@@ -30,8 +31,7 @@ abstract class SpriteManager {
         grabImage(texSheet, 3, 1, 128, 128),
         grabImage(texSheet, 4, 1, 128, 128),
         grabImage(texSheet, 1, 2, 128, 128),
-        grabImage(texSheet, 2, 2, 128, 128),
-        loadImage("paint\\stone.png")
+        grabImage(texSheet, 2, 2, 128, 128)
     };
     
     //indexes for textures[]

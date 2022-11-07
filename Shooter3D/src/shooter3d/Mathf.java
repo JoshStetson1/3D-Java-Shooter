@@ -2,9 +2,7 @@ package shooter3d;
 
 abstract class Mathf {
     
-    public static double P2 = Math.PI/2;
-    public static double P3 = 3*Math.PI/2;
-    public static double dr = Math.PI / 180;
+    public static double dr = Math.PI / 180;//1 degree in radians
     
     //distance between two points, is also used to find hypo
     public static double dist(double ax, double ay, double bx, double by){
@@ -82,15 +80,6 @@ abstract class Mathf {
         
         return finalDiff;
     }
-    //radians to degrees
-    public static int radToDeg(double ang){
-        return (int)(ang*180 / Math.PI);
-    }
-    //degrees to degrees
-    public static double degToRad(double ang){
-        return (ang * Math.PI / 1800);
-    }
-    
     //clamps a number between a min value and a max value
     public static double Clamp(double value, double min, double max){
         if(value < min) value = min;

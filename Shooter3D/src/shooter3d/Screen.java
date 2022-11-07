@@ -20,6 +20,7 @@ public final class Screen extends JPanel implements ActionListener, KeyListener,
     
     //for setting mouse position
     Robot robo;
+    boolean lockMouse = true;
     
     //for fps
     int frames; int fps = 70;
@@ -77,7 +78,7 @@ public final class Screen extends JPanel implements ActionListener, KeyListener,
         //draw FPS to screen
         g.setColor(Color.white);
         g.setFont(new Font("arial", Font.BOLD, 20));
-        g.drawString("FPS: " + Integer.toString(fps) + " " + l.enemys.size(), 0, 20);
+        g.drawString("FPS: " + Integer.toString(fps), 0, 20);
     }
     
     //render
@@ -96,7 +97,7 @@ public final class Screen extends JPanel implements ActionListener, KeyListener,
         }
         else if(state == game)
         {
-            p.paint(g);
+            p.rw.paint(g);
             //lm.paint(g);//2d testing
             lm.miniMap(g2, 475, 25, 100, 25);
         }
@@ -114,7 +115,7 @@ public final class Screen extends JPanel implements ActionListener, KeyListener,
         if(key == KeyEvent.VK_D) p.moving[1] = true;
         
         if(key == KeyEvent.VK_ESCAPE){
-            p.lockMouse = false;
+            lockMouse = false;
             hideCursor(false);
         }
     }
@@ -135,7 +136,7 @@ public final class Screen extends JPanel implements ActionListener, KeyListener,
         }
         else if(state == game)
         {
-            p.mouseClicked(mousePos()[0], mousePos()[1]);
+            p.mouseClicked();
         }
     }
     public void mouseReleased(MouseEvent e) {
@@ -178,6 +179,7 @@ public final class Screen extends JPanel implements ActionListener, KeyListener,
         p.hasWon = false;
         p.health = 100;
         
+        lockMouse = true;
         hideCursor(true);
         state = game;
     }

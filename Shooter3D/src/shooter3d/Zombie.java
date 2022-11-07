@@ -1,7 +1,6 @@
 package shooter3d;
 
 public class Zombie extends Enemy{
-    public boolean attack;
     public int damage = 20;
     int pushBack = 50;
     
@@ -13,7 +12,7 @@ public class Zombie extends Enemy{
         super(s, x, y, SpriteManager.zombie);
         
         //set physics value to main enemy class
-        super.maxMoveSpeed = 5;
+        super.maxMoveSpeed = 7;
         super.acc = 0.5;
         super.dcc = 0.5;
     }

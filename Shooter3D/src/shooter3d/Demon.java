@@ -1,8 +1,6 @@
 package shooter3d;
 
 public class Demon extends Enemy{
-    boolean attack = false;
-    
     Gun gun;
     
     public Demon(Screen s, int x, int y){
@@ -15,7 +13,7 @@ public class Demon extends Enemy{
         
         super.range = 1000;
         
-        gun = new Gun(s, Gun.gunShot, "enemy", false, 1, 45, 0, 1, 2, 10, SpriteManager.bullet2);
+        gun = new Gun(s, Gun.fireShot, "enemy", false, 1, 45, 0, 1, 2, 10, SpriteManager.bullet2);
     }
     @Override
     public void update(){

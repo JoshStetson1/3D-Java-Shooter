@@ -1,6 +1,5 @@
 package shooter3d;
 import java.awt.*;
-import static shooter3d.SpriteManager.words;
 
 public class Player {
     Screen s;
@@ -21,30 +20,23 @@ public class Player {
     boolean[] moving = new boolean[4];
     
     //mouse variables
-    double sensitivity = 0.2;
-    boolean lockMouse = true;
+    double sensitivity = 0.15;
     boolean shooting;
     
-    //3d world renderer
-    RenderWorld rw;
-    
     //health and death
-    boolean isDead;
-    boolean hasWon;
+    boolean isDead, hasWon;
     int health = 100;
-    Button restart, menu;
     
     //weapon for player
     Gun gun;
+    
+    //world renderer for player
+    RenderWorld rw;
     
     public Player(Screen s){
         this.s = s;
         
         rw = new RenderWorld(s, this);
-        
-        //buttons for death screen
-        restart = new Button(s, words[10], 300 - 126, 325, 126*2, 18*2, Button.shade);
-        menu = new Button(s, words[11], 300 - 126, 385, 126*2, 18*2, Button.shade);
         
         //default gun
         gun = new Gun(s, Gun.shotGun, "player", false, 5, 100, 10, 0.1, 5, 25, SpriteManager.bullet);
@@ -61,79 +53,18 @@ public class Player {
         y += velY * s.deltaTime;
         
         if(shooting) gun.shoot(ang, x, y);
-        
-        //if(s.l.enemys.isEmpty()) hasWon = true;
     }
-    public void paint(Graphics g){
-        Graphics2D g2 = (Graphics2D)g;
-        
-        g.fillRect((int)x, (int)y, 50, 50);
-        /*
-        g.setColor(Color.red);
-        g.drawLine((int)x + 25, (int)y + 25, (int)(x + (dx*50)) + 25, (int)(y + (dy*50)) + 25);
-        
-        double velAng = Math.atan2(velY, velX);
-        double dxx = Math.cos(velAng);
-        double dyy = Math.sin(velAng);
-        g.setColor(Color.blue);
-        g.drawLine((int)x + 25, (int)y + 25, (int)(x + (dxx*50)) + 25, (int)(y + (dyy*50)) + 25);
-        */
-        //drawing 3d world
-        rw.drawWorld(g);
-        
-        //crosshair
-        g.setColor(Color.white);
-        g.fillRect(rw.getWidth()/2 - 2, rw.getHeight()/2 - 2, 4, 4);
-        
-        //health bar
-        g.setColor(new Color(200, 0, 0));
-        g.fillRect(460, 150, 130, 10);
-        g.setColor(new Color(0, 200, 0));
-        g.fillRect(460, 150, (int)(health*1.3), 10);
-        g.setColor(Color.lightGray);
-        g.drawRect(460, 150, 130, 10);
-        
-        //death screen
-        if(isDead){
-            //background
-            g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(0, 0, 600, 600);
-            
-            s.hideCursor(false);
-            
-            //is dead text
-            g.drawImage(words[9], 48, 100, 126*4, 18*4, s);
-            
-            //paint buttons
-            restart.paint(g);
-            menu.paint(g);
-        }
-        
-        if(hasWon){
-            //background
-            g.setColor(new Color(0, 0, 0, 200));
-            g.fillRect(0, 0, 600, 600);
-            
-            s.hideCursor(false);
-            
-            //is dead text
-            //g.drawImage(words[9], 48, 100, 126*4, 18*4, s);
-            
-            //paint buttons
-            restart.paint(g);
-            menu.paint(g);
-        }
-    }
+    
     public void rotateHead(){
         //only lock mouse if window is active
         Window activeWindow = javax.swing.FocusManager.getCurrentManager().getActiveWindow();
-        if(activeWindow != s.frame) lockMouse = false;
+        if(activeWindow != s.frame) s.lockMouse = false;
         
         //check if getLocationOnScreen works because can be glitchy when first opening window
         try{int centerX = s.getLocationOnScreen().x + s.getWidth()/2;}
         catch(Exception e){ return;}
         
-        if(lockMouse){
+        if(s.lockMouse){
             PointerInfo a = MouseInfo.getPointerInfo();
             Point b = a.getLocation();
             
@@ -151,19 +82,9 @@ public class Player {
         }
     }
     public void movement(){
-        //velocity of player, hypo of x and y velocitys
-        double velocity = Mathf.dist(0, 0, velX, velY);
-        
-        double velAng = Math.atan2(velY, velX);
-        
-        double velDiffY = Mathf.diff(ang, velAng);
-        
-        //System.out.println(velDiffY + " " + ang + " " + velAng);
-        
-        double magY = Math.cos(velDiffY) * velocity;
-        double magX = Math.sin(velDiffY) * velocity;
-        
-        //System.out.println(magY + " " + magX);
+        //speed of player, hypo of velocities
+        double speed = Mathf.dist(0, 0, velX, velY);
+        double[] normalVel = Mathf.normalize(velX, velY);//normalized velocity
         
         //movement
         if(moving[2]){//move forwards
@@ -184,30 +105,19 @@ public class Player {
         }
         
         //max out speed/ multiply normalized velocity by maxSpeed as to maintain current direction
-        ///*
-        if(Mathf.dist(0, 0, velX, velY) > maxMoveSpeed){
-            double normalX = velX/velocity;
-            double normalY = velY/velocity;
-            
-            System.out.println(Math.cos(velAng) + " " + Math.sin(velAng));
-            System.out.println(normalX + " " + normalY);
-            
-            velX = Math.cos(velAng) * (maxMoveSpeed-1);
-            velY = Math.sin(velAng) * (maxMoveSpeed-1);
+        if(speed > maxMoveSpeed){
+            velX = normalVel[0] * maxMoveSpeed;
+            velY = normalVel[1] * maxMoveSpeed;
         }
-        //*/
         
         //drag
         if(!moving[0] && !moving[1] && !moving[2] && !moving[3])//no buttons are being pressed
         {
             //speed fits a stop threshold so no jitter when velocity approaches zero
             if(Mathf.dist(0, 0, velX, velY) > stopThreshold){
-                //multiply normalized velocity by decceleration force
-                double xDrag = -velX/velocity * dcc;
-                double yDrag = -velY/velocity * dcc;
-                
-                velX += xDrag * s.deltaTime;
-                velY += yDrag * s.deltaTime;
+                //add deceleration based on current velocity
+                velX -= normalVel[0] * dcc * s.deltaTime;
+                velY -= normalVel[1] * dcc * s.deltaTime;
             }
             else{
                 velX = 0;
@@ -215,6 +125,7 @@ public class Player {
             }
         }
     }
+    //array based collisions
     public void collisions(){
         int cellSize = s.lm.cellSize;
         double offset = maxMoveSpeed * s.deltaTime;
@@ -278,39 +189,19 @@ public class Player {
         return new Rectangle((int)x - size/2, (int)y - size/2, size, size);
     }
     
-    //shooting and buttons for death screen
-    public void mouseClicked(int mx, int my){
+    //shooting and UI
+    public void mouseClicked(){
         if(isDead || hasWon){
-            if(restart.checkHit(mx, my)) s.startGame();
-            if(menu.checkHit(mx, my)) s.mainMenu();
+            rw.mouseClicked(s.mousePos()[0], s.mousePos()[1]);
         }
         else{
-            if(!lockMouse){
-                lockMouse = true;
-                s.hideCursor(true);
-            }
-        
+            //shooting
             if(gun.isAuto) shooting = true;
             else gun.shoot(ang, x, y);
+            
+            //mouse
+            s.lockMouse = true;
+            s.hideCursor(true);
         }
     }
 }
-/*
-//movement
-        if(moving[2]){//move forwards
-            velX += dx * acc * s.deltaTime;
-            velY += dy * acc * s.deltaTime;
-        }
-        if(moving[3]){//move backwards
-            velX -= dx * acc * s.deltaTime;
-            velY -= dy * acc * s.deltaTime;
-        }
-        if(moving[0]){//move left
-            velX -= Math.cos(ang+(Math.PI/2)) * acc * s.deltaTime;
-            velY += Math.sin(ang-(Math.PI/2)) * acc * s.deltaTime;
-        }
-        if(moving[1]){//move right
-            velX += Math.cos(ang+(Math.PI/2)) * acc * s.deltaTime;
-            velY -= Math.sin(ang-(Math.PI/2)) * acc * s.deltaTime;
-        }
-*/

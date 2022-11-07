@@ -4,8 +4,10 @@ import java.io.File;
 import java.util.*;
 
 public class Gun {
-    static File shotGun = new File("sounds\\shot.wav");
-    static File gunShot = new File("sounds\\gunShot.wav");
+    static File shotGun = new File("sounds\\shotGun.wav");
+    static File gunShot = new File("sounds\\_unShot.wav");
+    static File sniper = new File("sounds\\sniper.wav");
+    static File fireShot = new File("sounds\\enemyShot.wav");
     
     Screen s;
     
